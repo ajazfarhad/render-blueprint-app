@@ -1,0 +1,32 @@
+services:
+- type: web
+  plan: free
+  region: frankfurt
+  name: rails-backend
+  env: ruby
+  buildCommand: cd showcase_api && ./bin/render-build.sh
+  startCommand: cd showcase_api && bundle exec puma
+  envVars:
+  - key: RAILS_MASTER_KEY
+    sync: false
+  - key: DATABASE_URL
+    fromDatabase:
+      name: shop_database
+      property: connectionString
+- type: web
+  name: react-frontend
+  env: static
+  buildCommand: cd showcase-fe && yarn install && yarn build
+  staticPublishPath: ./showcase-fe/build
+  envVars:
+  - key: REACT_APP_API_HOST
+    fromService:
+      type: web
+      name: rails-backend
+      property: host
+databases:
+- name: shop_database
+  databaseName: shop_database
+  user: shop_database_user
+  plan: free
+  region: frankfurt
